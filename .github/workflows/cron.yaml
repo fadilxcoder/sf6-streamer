@@ -1,0 +1,30 @@
+name: Build Premium DB
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */2 * * *" # https://crontab.guru/#0_*/2_*_*_* - 2 hours interval
+
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Install vendor
+        uses: php-actions/composer@v6
+        with:
+          php_version: "8.1"
+
+      - name: Build my json databases
+        run: php populate
+
+      - name: Save json databases
+        run: |-
+          git config user.name "Automated"
+          git config user.email "actions@users.noreply.github.com"
+          git add db.json
+          timestamp=$(date -u)
+          git commit -m "premium auto-build-${timestamp}" || exit 0
+          git push origin HEAD:main
