@@ -17,8 +17,8 @@ jobs:
         with:
           php_version: "8.1"
 
-      - name: Build my json databases
-        run: php populate
+      - name: Build my json db
+        run: php bin/console streams:api:build
 
       - name: Save json databases
         run: |-
