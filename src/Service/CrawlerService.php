@@ -29,7 +29,7 @@ class CrawlerService
 
         # Get all names
         $streamsNames = $webPageCrawler->filter('a.game-name span')->each(function ($node) {
-            return $node->text(); // Get name
+            return $node->text();
         });
 
         # Get all datetime
@@ -41,6 +41,16 @@ class CrawlerService
             return $originalDateTime->format('Y/m/d à H:i');
         });
 
+        # Get all sports name
+        $streamsSportsName = $webPageCrawler->filter('p.date')->each(function ($node) {
+            return $node->text();
+        });
+
+        # Get all sports flag
+        $streamsSportsFlag = $webPageCrawler->filter('img.mascot')->each(function ($node) {
+            return $node->attr('src');
+        });
+
         # Build db parent level
         $inMemoryDatabase = [];
         for ($i = 0; $i < count($streamsUrls); $i++) {
@@ -48,6 +58,8 @@ class CrawlerService
                 'id' => uniqid(),
                 'title' => $streamsNames[$i],
                 'browser_uuid' => $streamsUrls[$i],
+                'sport_name' => $streamsSportsName[$i],
+                'sport_flag' => $streamsSportsFlag[$i],
                 'date_time' => $streamsDateTime[$i],
             ];
         }
