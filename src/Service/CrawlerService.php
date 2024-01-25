@@ -11,7 +11,7 @@ class CrawlerService
 {
     private $client;
 
-    public function __construct()
+    public function __construct(private string $url)
     {
         $this->client = new HttpBrowser();
     }
@@ -19,7 +19,7 @@ class CrawlerService
     public function build(): array
     {
         $this->client->setMaxRedirects(2);
-        $baseUrl = 'https://www.streamonsport.ru/';
+        $baseUrl = $this->url;
         $webPageCrawler = $this->client->request('GET', $baseUrl);
 
         # Get all links
@@ -87,13 +87,13 @@ class CrawlerService
                 $eachPagestreamUrls = $eachPagestreamFlags = $eachPagestreamChannelNames = [];
             }
 
-            $inMemoryDatabase[$key]['live'] = $this->buildStreams($baseUrl, $eachPagestreamUrls, $eachPagestreamFlags, $eachPagestreamChannelNames);
+            $inMemoryDatabase[$key]['live'] = $this->buildStreamChannels($baseUrl, $eachPagestreamUrls, $eachPagestreamFlags, $eachPagestreamChannelNames);
         }
 
         return $inMemoryDatabase;
     }
 
-    private function buildStreams(string $baseUrl, array $streamUrls, array $streamsFlags, array $streamsChannels): array
+    private function buildStreamChannels(string $baseUrl, array $streamUrls, array $streamsFlags, array $streamsChannels): array
     {
         $identifier = [];
         foreach ($streamUrls as $key => $url) :
