@@ -2,7 +2,7 @@ name: Build Premium DB
 
 on:
   repository_dispatch:
-      types: [manual_build]
+      types: [fx/manual-build]
   workflow_dispatch:
   schedule:
     - cron: "0 */2 * * *" # https://crontab.guru/#0_*/2_*_*_* - 2 hours interval
