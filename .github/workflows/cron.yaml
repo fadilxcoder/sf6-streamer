@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install vendor
         uses: php-actions/composer@v6
@@ -28,5 +28,5 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add db.json
           timestamp=$(date -u)
-          git commit -m "premium auto-build-${timestamp}" || exit 0
+          git commit -m "auto-build-${timestamp}" || exit 0
           git push origin HEAD:main --force
