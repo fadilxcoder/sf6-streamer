@@ -21,103 +21,76 @@ class CrawlerService
         $this->client->setMaxRedirects(2);
         $baseUrl = $this->url;
         $webPageCrawler = $this->client->request('GET', $baseUrl);
-
-        # Get all links
-        $streamsUrls = $webPageCrawler->filter('a.game-name')->each(function ($node) {
-            return $node->attr('href');
-        });
-
-        # Get all names
-        $streamsNames = $webPageCrawler->filter('a.game-name span')->each(function ($node) {
-            return $node->text();
-        });
-
-        # Get all datetime
-        $streamsDateTime = $webPageCrawler->filter('.details p.date time')->each(function ($node) {
-            $originalTimestamp = $node->attr('data-time'); // Get date
-            $originalDateTime = new DateTime($originalTimestamp, new DateTimeZone('Europe/Paris'));
-            $originalDateTime->setTimezone(new DateTimeZone('Indian/Mauritius'));
-
-            return $originalDateTime->format('Y/m/d à H:i');
-        });
-
-        # Get all sports name
-        $streamsSportsName = $webPageCrawler->filter('p.date')->each(function ($node) {
-            return $node->text();
-        });
-
-        # Get all sports flag
-        $streamsSportsFlag = $webPageCrawler->filter('img.mascot')->each(function ($node) {
-            return $node->attr('src');
+        $matches = [];
+        $webPageCrawler->filter('ul#events > li')->each(function ($node) use (&$matches) {
+            $matchTitle = trim($node->filter('a')->first()->text());
+            $streamUrls = $node->filter('ul li.subitem1 a')->each(function ($streamNode) {
+                return $streamNode->attr('href');
+            });
+        
+            $matches[$matchTitle] = $streamUrls;
         });
 
         # Build db parent level
         $inMemoryDatabase = [];
-        for ($i = 0; $i < count($streamsUrls); $i++) {
+        $i = 0;
+        foreach ($matches as $matchName => $matchUrl) {
             $inMemoryDatabase[$i] = [
                 'id' => uniqid(),
-                'title' => $streamsNames[$i],
-                'browser_uuid' => $streamsUrls[$i],
-                'sport_name' => $streamsSportsName[$i],
-                'sport_flag' => $streamsSportsFlag[$i],
-                'date_time' => $streamsDateTime[$i],
+                'title' => $matchName,
+                'browser_uuid' => $matchUrl,
+                'sport_name' => '-',
+                'sport_flag' => 'https://img.icons8.com/?size=48&id=iU4rpa9QGXp0&format=png',
+                'date_time' => "0000/00/00 à 00:00",
             ];
+            $i++;
         }
 
         foreach ($inMemoryDatabase as $key => $data) {
-            try {
-                $eachPagecrawler = $this->client->request('GET', $data['browser_uuid']);
+            foreach ($data['browser_uuid'] as $linkKey => $linkValue) {
+                $isoCode = substr($linkValue, -2);
+                $eachPagecrawler = $this->client->request('GET', $linkValue);
 
-                # Get all child links by parent
-                $eachPagestreamUrls = $eachPagecrawler->filter('div#chanel_links a')->each(function ($node) {
-                    return $node->attr('onclick');
+                # Extract the <script> block that contains the "videos" variable
+                $scriptTag = $eachPagecrawler->filter('script')->each(function ($node) {
+                    if (strpos($node->text(), 'var videos =') !== false) {
+                        return $node->text();
+                    }
                 });
 
-                 # Get all child flags by parent
-                 $eachPagestreamFlags = $eachPagecrawler->filter('div#chanel_links a img')->each(function ($node) {
-                     return $node->attr('src');
-                 });
+                # Look for the script that contains the "videos" variable
+                foreach ($scriptTag as $script) {
+                    if ($script) {
+                        $scriptContent = $script;
+                        break;
+                    }
+                }
 
-                 # Get all child channels name by parent
-                 $eachPagestreamChannelNames = $eachPagecrawler->filter('div#chanel_links a')->each(function ($node) {
-                     return $node->text();
-                 });
+                # Check if we found the "videos" variable
+                if ($scriptContent && preg_match('/var videos = (.*?);/', $scriptContent, $matches)) {
 
-            } catch (LogicException $e) {
-                $eachPagestreamUrls = $eachPagestreamFlags = $eachPagestreamChannelNames = [];
+                    # Replace single quotes with double quotes
+                    $jsonString = str_replace("'", '"', $matches[1]);
+
+                    #  Remove trailing commas before the closing brackets using a regular expression
+                    $jsonString = preg_replace('/,(\s*[}\]])/', '$1', $jsonString);
+                    $videosArray = json_decode($jsonString, true);
+
+                    if (isset($videosArray['SUB'])) {
+                        foreach ($videosArray['SUB'] as $video) {
+                            $inMemoryDatabase[$key]['live'][] = [
+                                'stream_url' => $video['code'],
+                                'flag' => 'https://www.shareicon.net/data/128x128/2015/08/08/82248_media_16x16.png',
+                                'channel_name' => strtoupper($isoCode) . ' - ' . $video['server'],
+                            ];
+                        }
+
+                    }
+                }
             }
 
-            $inMemoryDatabase[$key]['live'] = $this->buildStreamChannels($baseUrl, $eachPagestreamUrls, $eachPagestreamFlags, $eachPagestreamChannelNames);
         }
 
         return $inMemoryDatabase;
-    }
-
-    private function buildStreamChannels(string $baseUrl, array $streamUrls, array $streamsFlags, array $streamsChannels): array
-    {
-        $identifier = [];
-        foreach ($streamUrls as $key => $url) :
-            # domain filtering
-            $explodeArr = explode("'", $url);
-            foreach ($explodeArr as $array)  :
-                if (preg_match('#/#', $array)) {
-                    if (preg_match('#https#', $array))
-                    {
-                        $uriFormat = explode("id=", $array);
-                        foreach ($uriFormat as $uri) {
-                            if (str_contains($uri, 'https')) {
-                                $identifier[$key]['stream_url'] = $uri;
-                            }
-                        }
-                    } else {
-                        $identifier[$key]['stream_url'] = $baseUrl.$array;
-                    }
-                    $identifier[$key]['flag'] =  $baseUrl.$streamsFlags[$key]; # flag mapping
-                    $identifier[$key]['channel_name'] =  $streamsChannels[$key]; # channel mapping
-                }
-            endforeach;
-        endforeach;
-
-        return $identifier;
     }
 }
