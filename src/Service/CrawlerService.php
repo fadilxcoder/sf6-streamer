@@ -20,25 +20,14 @@ class CrawlerService
     {
         $this->client->setMaxRedirects(2);
         $baseUrl = $this->url;
-        // $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
+        # $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
         $json = file_get_contents($baseUrl . 'data.php');
-        // var_dump(json_decode($json));die;
         $matches = json_decode($json, true);
-
-        // $webPageCrawler->filter('.table-dark > li')->each(function ($node) use (&$matches) {
-        //     $matchTitle = trim($node->filter('a')->first()->text());
-        //     $streamUrls = $node->filter('ul li.subitem1 a')->each(function ($streamNode) {
-        //         return $streamNode->attr('href');
-        //     });
-        
-        //     $matches[$matchTitle] = $streamUrls;
-        // });
 
         # Build db parent level
         $inMemoryDatabase = [];
         $i = 0;
         foreach ($matches as $matchKey => $matchValue) {
-            // var_dump($matchValue);die;
             $title = sprintf('%s vs %s', $matchValue['home'], $matchValue['away']);
             $liveStreams = [];
 
@@ -54,9 +43,9 @@ class CrawlerService
                 'id' => uniqid(),
                 'title' => $title,
                 'browser_uuid' => $baseUrl . 'live/foot/' . $matchValue['league'] . '/' . $title,
-                'sport_name' => '-',
+                'sport_name' => $matchValue['type'],
                 'sport_flag' => 'https://img.icons8.com/?size=48&id=iU4rpa9QGXp0&format=png',
-                'date_time' => "0000/00/00 à 00:00",
+                'date_time' => date('Y/m/d \à H:i', ($matchValue['time'] / 1000)),
                 'live' => $liveStreams
             ];
             $i++;
