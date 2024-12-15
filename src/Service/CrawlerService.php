@@ -33,7 +33,7 @@ class CrawlerService
 
             foreach ($matchValue['streams'] as $streams) {
                 $liveStreams[] = [
-                    'stream_url' => $baseUrl . 'ply/2/' . $streams['ch'],
+                    'stream_url' => $baseUrl . 'plyz/2/' . $streams['ch'],
                     'flag' => 'https://www.shareicon.net/data/128x128/2015/08/08/82248_media_16x16.png',
                     'channel_name' => sprintf('%s vs %s', $streams['ch'], $streams['lang'])
                 ];
