@@ -39,13 +39,17 @@ class CrawlerService
                 ];
             }
 
+            $datetime = new DateTime();
+            $datetime->setTimestamp($matchValue['time'] / 1000);
+            $datetime->setTimezone(new DateTimeZone('Indian/Mauritius'));
+
             $inMemoryDatabase[$i] = [
                 'id' => uniqid(),
                 'title' => $title,
                 'browser_uuid' => $baseUrl . 'live/foot/' . $matchValue['league'] . '/' . $title,
                 'sport_name' => $matchValue['type'],
                 'sport_flag' => 'https://img.icons8.com/?size=48&id=iU4rpa9QGXp0&format=png',
-                'date_time' => date('Y/m/d \à H:i', ($matchValue['time'] / 1000)),
+                'date_time' => $datetime->format('Y/m/d \à H:i \G\M\T'),
                 'live' => $liveStreams
             ];
             $i++;
