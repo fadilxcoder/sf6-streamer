@@ -21,7 +21,13 @@ class CrawlerService
         $this->client->setMaxRedirects(2);
         $baseUrl = $this->url;
         # $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
-        $json = file_get_contents($baseUrl . 'data.php');
+        $stream_context = stream_context_create([
+            "ssl" => [
+                "verify_peer" => false,
+                "verify_peer_name" => false
+            ]
+        ]);  
+        $json = file_get_contents($baseUrl . 'json.php', false, $stream_context);
         $matches = json_decode($json, true);
 
         # Build db parent level
