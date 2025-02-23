@@ -18,6 +18,7 @@ class CrawlerService
 
     public function build(): array
     {
+        ini_set('user_agent','Mozilla/4.0 (compatible; MSIE 6.0)');
         $this->client->setMaxRedirects(2);
         $baseUrl = $this->url;
         # $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
@@ -25,9 +26,6 @@ class CrawlerService
             "ssl" => [
                 "verify_peer" => false,
                 "verify_peer_name" => false
-            ],
-            "http" => [
-                "header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
             ]
         ]);  
         $json = file_get_contents($baseUrl . 'json.php', false, $stream_context);
