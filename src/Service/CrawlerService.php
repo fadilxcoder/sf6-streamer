@@ -21,57 +21,14 @@ class CrawlerService
         $this->client->setMaxRedirects(2);
         $baseUrl = $this->url;
         # $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
-        /*
         $stream_context = stream_context_create([
             "ssl" => [
                 "verify_peer" => false,
                 "verify_peer_name" => false
-            ],
-            "http" => [
-                "method" => "GET",
-                "header" => "User-Agent: MyApp/1.0\r\n"
             ]
         ]);  
         $json = file_get_contents($baseUrl . 'json.php', false, $stream_context);
         $matches = json_decode($json, true);
-        */
-
-$url = "https://jokertv.ru/json.php";
-
-// Using cURL
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_USERAGENT, "PHP-cURL/1.0");
-
-$response = curl_exec($ch);
-
-if (curl_errno($ch)) {
-    die("cURL error: " . curl_error($ch));
-}
-
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
-
-// Check HTTP status code
-if ($httpCode !== 200) {
-    die("HTTP request failed with status code: $httpCode");
-}
-
-// Show raw response for debugging
-echo "Raw response:\n";
-var_dump($response);
-
-// Decode JSON response
-$data = json_decode($response, true);
-
-if (json_last_error() !== JSON_ERROR_NONE) {
-    die("Failed to parse JSON: " . json_last_error_msg());
-}
-
-// Output the data
-dd($data);
-
-
 
         # Build db parent level
         $inMemoryDatabase = [];
