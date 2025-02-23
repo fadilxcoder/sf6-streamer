@@ -21,6 +21,7 @@ class CrawlerService
         $this->client->setMaxRedirects(2);
         $baseUrl = $this->url;
         # $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
+        /*
         $stream_context = stream_context_create([
             "ssl" => [
                 "verify_peer" => false,
@@ -33,6 +34,17 @@ class CrawlerService
         ]);  
         $json = file_get_contents($baseUrl . 'json.php', false, $stream_context);
         $matches = json_decode($json, true);
+        */
+
+        $ch = curl_init($baseUrl . 'json.php');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, "PHP-cURL/1.0");
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            die("cURL error: " . curl_error($ch));
+        }
+        $matches = json_decode($response, true);
+        dd($matches);
 
         # Build db parent level
         $inMemoryDatabase = [];
