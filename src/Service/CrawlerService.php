@@ -18,43 +18,6 @@ class CrawlerService
 
     public function build(): array
     {
-
-        // URL to fetch JSON data from
-$url = "https://jokertv.ru/json.php";
-
-// Initialize a cURL session
-$ch = curl_init();
-
-// Set the URL and other options
-curl_setopt($ch, CURLOPT_URL, $url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-// Bypass SSL verification (use with caution in production)
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-
-// Set headers to mimic a browser request and avoid 403 Forbidden
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    'Accept: application/json, text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8',
-    'Accept-Language: en-US,en;q=0.9',
-    'Referer: https://jokertv.ru/', // Add a referer header
-    'Connection: keep-alive',
-    'Cache-Control: max-age=0',
-]);
-
-// Execute the cURL request and store the response
-$response = curl_exec($ch);
-
-
-$jsonData = json_decode($response, true);
-
-    var_dump($response,$jsonData);die;
-
-// Close the cURL session
-curl_close($ch);
-
-die;
         $this->client->setMaxRedirects(2);
         $baseUrl = $this->url;
         # $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
@@ -62,10 +25,6 @@ die;
             "ssl" => [
                 "verify_peer" => false,
                 "verify_peer_name" => false
-            ],
-            "http" => [
-                'ignore_errors' => true,
-                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36',
             ]
         ]);  
         $json = file_get_contents($baseUrl . 'json.php', false, $stream_context);
