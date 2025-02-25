@@ -17,7 +17,7 @@ jobs:
       - name: Install vendor
         uses: php-actions/composer@v6
         with:
-          php_version: "8.1"
+          php_version: "8.3"
 
       - name: Build my json db
         run: php bin/console streams:api:build
