@@ -38,6 +38,8 @@ if (curl_errno($ch)) {
     // Decode the JSON response
     $jsonData = json_decode($response, true);
 
+    print_r($jsonData);die;
+
     // Check if the JSON decoding was successful
     if (json_last_error() === JSON_ERROR_NONE) {
         // Print the JSON data
