@@ -19,7 +19,8 @@ class CrawlerService
     public function build(): array
     {
 
-        $url = "https://jokertv.ru/json.php";
+        // URL to fetch JSON data from
+$url = "https://jokertv.ru/json.php";
 
 // Initialize a cURL session
 $ch = curl_init();
@@ -28,27 +29,24 @@ $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
+// Bypass SSL verification (use with caution in production)
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+// Set headers to mimic a browser request and avoid 403 Forbidden
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Accept: application/json',
+    'Accept-Language: en-US,en;q=0.9',
+]);
+
 // Execute the cURL request and store the response
 $response = curl_exec($ch);
+
+
 $jsonData = json_decode($response, true);
 
     var_dump($jsonData);die;
-
-// Check for cURL errors
-if (curl_errno($ch)) {
-    echo 'cURL error: ' . curl_error($ch);
-} else {
-    // Decode the JSON response
-    
-
-    // Check if the JSON decoding was successful
-    if (json_last_error() === JSON_ERROR_NONE) {
-        // Print the JSON data
-        print_r($jsonData);
-    } else {
-        echo 'Error decoding JSON: ' . json_last_error_msg();
-    }
-}
 
 // Close the cURL session
 curl_close($ch);
