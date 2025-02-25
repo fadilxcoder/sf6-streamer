@@ -36,8 +36,11 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 // Set headers to mimic a browser request and avoid 403 Forbidden
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    'Accept: application/json',
+    'Accept: application/json, text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8',
     'Accept-Language: en-US,en;q=0.9',
+    'Referer: https://jokertv.ru/', // Add a referer header
+    'Connection: keep-alive',
+    'Cache-Control: max-age=0',
 ]);
 
 // Execute the cURL request and store the response
