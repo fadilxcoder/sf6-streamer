@@ -30,15 +30,16 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
 // Execute the cURL request and store the response
 $response = curl_exec($ch);
+$jsonData = json_decode($response, true);
+
+    print_r($jsonData);die;
 
 // Check for cURL errors
 if (curl_errno($ch)) {
     echo 'cURL error: ' . curl_error($ch);
 } else {
     // Decode the JSON response
-    $jsonData = json_decode($response, true);
-
-    print_r($jsonData);die;
+    
 
     // Check if the JSON decoding was successful
     if (json_last_error() === JSON_ERROR_NONE) {
