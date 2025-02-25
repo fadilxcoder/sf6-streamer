@@ -25,6 +25,9 @@ class CrawlerService
             "ssl" => [
                 "verify_peer" => false,
                 "verify_peer_name" => false
+            ],
+            "http" => [
+                "header" => "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36",
             ]
         ]);  
         $json = file_get_contents($baseUrl . 'json.php', false, $stream_context);
