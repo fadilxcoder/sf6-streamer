@@ -18,6 +18,39 @@ class CrawlerService
 
     public function build(): array
     {
+
+        $url = "https://jokertv.ru/json.php";
+
+// Initialize a cURL session
+$ch = curl_init();
+
+// Set the URL and other options
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+// Execute the cURL request and store the response
+$response = curl_exec($ch);
+
+// Check for cURL errors
+if (curl_errno($ch)) {
+    echo 'cURL error: ' . curl_error($ch);
+} else {
+    // Decode the JSON response
+    $jsonData = json_decode($response, true);
+
+    // Check if the JSON decoding was successful
+    if (json_last_error() === JSON_ERROR_NONE) {
+        // Print the JSON data
+        print_r($jsonData);
+    } else {
+        echo 'Error decoding JSON: ' . json_last_error_msg();
+    }
+}
+
+// Close the cURL session
+curl_close($ch);
+
+die;
         $this->client->setMaxRedirects(2);
         $baseUrl = $this->url;
         # $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
