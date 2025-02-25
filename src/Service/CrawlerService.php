@@ -32,7 +32,7 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
 $jsonData = json_decode($response, true);
 
-    print_r($jsonData);die;
+    var_dump($jsonData);die;
 
 // Check for cURL errors
 if (curl_errno($ch)) {
