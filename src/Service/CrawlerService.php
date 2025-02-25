@@ -46,7 +46,7 @@ $response = curl_exec($ch);
 
 $jsonData = json_decode($response, true);
 
-    var_dump($jsonData);die;
+    var_dump($response,$jsonData);die;
 
 // Close the cURL session
 curl_close($ch);
