@@ -22,10 +22,10 @@ class CrawlerService
         $baseUrl = $this->url;
         # $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
         $stream_context = stream_context_create([
-            "ssl" => [
-                "verify_peer" => false,
-                "verify_peer_name" => false
-            ],
+            // "ssl" => [
+            //     "verify_peer" => false,
+            //     "verify_peer_name" => false
+            // ],
             "http" => [
                 'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36',
             ]
