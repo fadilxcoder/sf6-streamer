@@ -20,7 +20,9 @@ jobs:
           php_version: "8.3"
 
       - name: Build my json db
-        run: php bin/console streams:api:build
+        run: |-
+          php -i | grep allow_url_fopen
+          php bin/console streams:api:build
 
       - name: Save json databases
         run: |-
