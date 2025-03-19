@@ -33,7 +33,7 @@ class CrawlerService
         });
 
         # Get all datetime
-        $streamsDateTime = $webPageCrawler->filter('.details p.date time')->each(function ($node) {
+        $streamsDateTime = $webPageCrawler->filter('.details p.houre time')->each(function ($node) {
             $originalTimestamp = $node->attr('data-time'); // Get date
             $originalDateTime = new DateTime($originalTimestamp, new DateTimeZone('Europe/Paris'));
             $originalDateTime->setTimezone(new DateTimeZone('Indian/Mauritius'));
@@ -42,7 +42,7 @@ class CrawlerService
         });
 
         # Get all sports name
-        $streamsSportsName = $webPageCrawler->filter('p.date')->each(function ($node) {
+        $streamsSportsName = $webPageCrawler->filter('p.houre')->each(function ($node) {
             return $node->text();
         });
 
@@ -59,7 +59,7 @@ class CrawlerService
                 'title' => $streamsNames[$i],
                 'browser_uuid' => $streamsUrls[$i],
                 'sport_name' => $streamsSportsName[$i],
-                'sport_flag' => $streamsSportsFlag[$i],
+                'sport_flag' => '', //$streamsSportsFlag[$i],
                 'date_time' => $streamsDateTime[$i],
             ];
         }
