@@ -4,8 +4,8 @@ on:
   repository_dispatch:
       types: [fx/manual-build]
   workflow_dispatch:
-  # schedule:
-  #   - cron: "0 */2 * * *" # https://crontab.guru/#0_*/2_*_*_* - 2 hours interval
+  schedule:
+    - cron: "0 */2 * * *" # https://crontab.guru/#0_*/2_*_*_* - 2 hours interval
   push:
     branches:
       - main

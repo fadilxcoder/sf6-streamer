@@ -20,47 +20,104 @@ class CrawlerService
     {
         $this->client->setMaxRedirects(2);
         $baseUrl = $this->url;
-        # $webPageJson= $this->client->request('GET', $baseUrl . 'data.php');
-        $stream_context = stream_context_create([
-            "ssl" => [
-                "verify_peer" => false,
-                "verify_peer_name" => false
-            ]
-        ]);  
-        $json = file_get_contents($baseUrl . 'json.php', false, $stream_context);
-        $matches = json_decode($json, true);
+        $webPageCrawler = $this->client->request('GET', $baseUrl);
+
+        # Get all links
+        $streamsUrls = $webPageCrawler->filter('a.game-name')->each(function ($node) {
+            return $node->attr('href');
+        });
+
+        # Get all names
+        $streamsNames = $webPageCrawler->filter('a.game-name span')->each(function ($node) {
+            return $node->text();
+        });
+
+        # Get all datetime
+        $streamsDateTime = $webPageCrawler->filter('.details p.date time')->each(function ($node) {
+            $originalTimestamp = $node->attr('data-time'); // Get date
+            $originalDateTime = new DateTime($originalTimestamp, new DateTimeZone('Europe/Paris'));
+            $originalDateTime->setTimezone(new DateTimeZone('Indian/Mauritius'));
+
+            return $originalDateTime->format('Y/m/d à H:i');
+        });
+
+        # Get all sports name
+        $streamsSportsName = $webPageCrawler->filter('p.date')->each(function ($node) {
+            return $node->text();
+        });
+
+        # Get all sports flag
+        $streamsSportsFlag = $webPageCrawler->filter('img.mascot')->each(function ($node) {
+            return $node->attr('src');
+        });
 
         # Build db parent level
         $inMemoryDatabase = [];
-        $i = 0;
-        foreach ($matches as $matchKey => $matchValue) {
-            $title = sprintf('%s vs %s', $matchValue['home'], $matchValue['away']);
-            $liveStreams = [];
-
-            foreach ($matchValue['streams'] as $streams) {
-                $liveStreams[] = [
-                    'stream_url' => $baseUrl . 'ccc/2/' . $streams['ch'],
-                    'flag' => 'https://www.shareicon.net/data/128x128/2015/08/08/82248_media_16x16.png',
-                    'channel_name' => sprintf('%s vs %s', $streams['ch'], $streams['lang'])
-                ];
-            }
-
-            $datetime = new DateTime();
-            $datetime->setTimestamp($matchValue['time'] / 1000);
-            $datetime->setTimezone(new DateTimeZone('Indian/Mauritius'));
-
+        for ($i = 0; $i < count($streamsUrls); $i++) {
             $inMemoryDatabase[$i] = [
                 'id' => uniqid(),
-                'title' => $title,
-                'browser_uuid' => $baseUrl . 'live/foot/' . $matchValue['league'] . '/' . $title,
-                'sport_name' => $matchValue['type'],
-                'sport_flag' => 'https://img.icons8.com/?size=48&id=iU4rpa9QGXp0&format=png',
-                'date_time' => $datetime->format('Y/m/d \à H:i \G\M\T'),
-                'live' => $liveStreams
+                'title' => $streamsNames[$i],
+                'browser_uuid' => $streamsUrls[$i],
+                'sport_name' => $streamsSportsName[$i],
+                'sport_flag' => $streamsSportsFlag[$i],
+                'date_time' => $streamsDateTime[$i],
             ];
-            $i++;
+        }
+
+        foreach ($inMemoryDatabase as $key => $data) {
+            try {
+                $eachPagecrawler = $this->client->request('GET', $data['browser_uuid']);
+
+                # Get all child links by parent
+                $eachPagestreamUrls = $eachPagecrawler->filter('div#chanel_links a')->each(function ($node) {
+                    return $node->attr('onclick');
+                });
+
+                # Get all child flags by parent
+                $eachPagestreamFlags = $eachPagecrawler->filter('div#chanel_links a img')->each(function ($node) {
+                    return $node->attr('src');
+                });
+
+                # Get all child channels name by parent
+                $eachPagestreamChannelNames = $eachPagecrawler->filter('div#chanel_links a')->each(function ($node) {
+                    return $node->text();
+                });
+
+            } catch (LogicException $e) {
+                $eachPagestreamUrls = $eachPagestreamFlags = $eachPagestreamChannelNames = [];
+            }
+
+            $inMemoryDatabase[$key]['live'] = $this->buildStreamChannels($baseUrl, $eachPagestreamUrls, $eachPagestreamFlags, $eachPagestreamChannelNames);
         }
 
         return $inMemoryDatabase;
+    }
+
+    private function buildStreamChannels(string $baseUrl, array $streamUrls, array $streamsFlags, array $streamsChannels): array
+    {
+        $identifier = [];
+        foreach ($streamUrls as $key => $url) :
+            # domain filtering
+            $explodeArr = explode("'", $url);
+            foreach ($explodeArr as $array)  :
+                if (preg_match('#/#', $array)) {
+                    if (preg_match('#https#', $array))
+                    {
+                        $uriFormat = explode("id=", $array);
+                        foreach ($uriFormat as $uri) {
+                            if (str_contains($uri, 'https')) {
+                                $identifier[$key]['stream_url'] = $uri;
+                            }
+                        }
+                    } else {
+                        $identifier[$key]['stream_url'] = $baseUrl.$array;
+                    }
+                    $identifier[$key]['flag'] =  $baseUrl.$streamsFlags[$key]; # flag mapping
+                    $identifier[$key]['channel_name'] =  $streamsChannels[$key]; # channel mapping
+                }
+            endforeach;
+        endforeach;
+
+        return $identifier;
     }
 }
