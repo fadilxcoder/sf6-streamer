@@ -69,18 +69,18 @@ class CrawlerService
                 $eachPagecrawler = $this->client->request('GET', $data['browser_uuid']);
 
                 # Get all child links by parent
-                $eachPagestreamUrls = $eachPagecrawler->filter('div#chanel_links a')->each(function ($node) {
-                    return $node->attr('onclick');
+                $eachPagestreamUrls = $eachPagecrawler->filter('div#kakarotvideo div.servideo span.change-video')->each(function ($node) {
+                    return $node->attr('data-embed');
                 });
 
                 # Get all child flags by parent
-                $eachPagestreamFlags = $eachPagecrawler->filter('div#chanel_links a img')->each(function ($node) {
+                $eachPagestreamFlags = $eachPagecrawler->filter('div#kakarotvideo div.servideo span.change-video img')->each(function ($node) {
                     return $node->attr('src');
                 });
 
                 # Get all child channels name by parent
-                $eachPagestreamChannelNames = $eachPagecrawler->filter('div#chanel_links a')->each(function ($node) {
-                    return $node->text();
+                $eachPagestreamChannelNames = $eachPagecrawler->filter('div#kakarotvideo div.servideo span.change-video')->each(function ($node) {
+                    return trim($node->text()); // Remove extra whitespace
                 });
 
             } catch (LogicException $e) {
@@ -97,25 +97,11 @@ class CrawlerService
     {
         $identifier = [];
         foreach ($streamUrls as $key => $url) :
-            # domain filtering
-            $explodeArr = explode("'", $url);
-            foreach ($explodeArr as $array)  :
-                if (preg_match('#/#', $array)) {
-                    if (preg_match('#https#', $array))
-                    {
-                        $uriFormat = explode("id=", $array);
-                        foreach ($uriFormat as $uri) {
-                            if (str_contains($uri, 'https')) {
-                                $identifier[$key]['stream_url'] = $uri;
-                            }
-                        }
-                    } else {
-                        $identifier[$key]['stream_url'] = $baseUrl.$array;
-                    }
-                    $identifier[$key]['flag'] =  $baseUrl.$streamsFlags[$key]; # flag mapping
-                    $identifier[$key]['channel_name'] =  $streamsChannels[$key]; # channel mapping
-                }
-            endforeach;
+            if (empty($url)) continue;
+            $fullUrl = str_starts_with($url, 'http') ? $url : $baseUrl . $url;
+            $identifier[$key]['stream_url'] = $fullUrl;
+            $identifier[$key]['flag'] = $streamsFlags[$key] ?? '';
+            $identifier[$key]['channel_name'] = $streamsChannels[$key] ?? '';
         endforeach;
 
         return $identifier;
