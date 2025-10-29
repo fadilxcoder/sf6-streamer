@@ -5,7 +5,7 @@ on:
       types: [fx/manual-build]
   workflow_dispatch:
   schedule:
-    - cron: "30 20 * * *" # https://crontab.guru/#0_*/2_*_*_* - 2 hours interval
+    - cron: "0 */2 * * *" # https://crontab.guru/#0_*/2_*_*_* - 2 hours interval
   push:
     branches:
       - main
